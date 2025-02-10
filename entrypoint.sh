@@ -25,8 +25,8 @@ source .venv/bin/activate
 pip install --no-cache-dir -r requirements.txt
 
 # Step 3: Create the configuration file if it doesn't exist
-if [ ! -f config.json ]; then
-    echo "Copying config-example.json to config.json..."
+if [ ! -f config.toml ]; then
+    echo "Copying sample-config.toml to config.toml..."
     cp sample-config.toml config.toml
 fi
 
