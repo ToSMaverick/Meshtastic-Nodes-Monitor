@@ -146,6 +146,7 @@ if __name__ == '__main__':
     config = Config()
     notifier = TelegramNotifier()
     localNode = Mesh().node.localNode
+    host = config.get('server.listen_host', "127.0.0.1")
     port = config.get('server.listen_port', find_free_port())
 
     if os.name == 'nt':
@@ -155,4 +156,4 @@ if __name__ == '__main__':
 
     print(f'To reopen browser, go to: http://127.0.0.1:{port}')   
     asyncio.run(notifier.send_message(f"<b>Meshtastic Monitor</b> started!"))
-    app.run(port=port, debug=False)
+    app.run(host=host, port=port, debug=False)
