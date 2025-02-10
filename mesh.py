@@ -1,12 +1,12 @@
 from meshtastic.tcp_interface import TCPInterface
 from meshtastic.serial_interface import SerialInterface
 from meshtastic.mesh_interface import MeshInterface
-
+from config import Config
 import sys
 
 
 #   If using TCP/IP
-DEFAULT_DEVICE = '192.168.5.50'
+DEFAULT_DEVICE = Config().get('mesh.default_device', '192.168.5.50')
 
 #   If using Serial
 # DEFAULT_DEVICE = "/dev/cu.usbserial-0001"

@@ -26,3 +26,7 @@ message_types = ["TEXT_MESSAGE_APP", "NODEINFO_APP"]  # List of message types to
 # Server configuration
 [server]
 listen_port = 4711                  # Port on which the server listens
+
+# Address of Meshtastic node
+[mesh]
+default_device = "192.168.5.50"
