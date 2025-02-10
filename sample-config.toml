@@ -16,3 +16,13 @@ max_messages    = 1024              # Maximum number of rows of messages we keep
 # Control debugging features
 [debug]
 http_logging    = false             # Do we want to see HTTP logs for every call from the app?
+
+# Telegram configuration
+[telegram]
+token = "YOUR_BOT_TOKEN"            # Your Telegram bot token
+chat_id = "YOUR_CHAT_ID"            # Your Telegram chat ID
+message_types = ["TEXT_MESSAGE_APP", "NODEINFO_APP"]  # List of message types to forward
+
+# Server configuration
+[server]
+listen_port = 4711                  # Port on which the server listens

@@ -8,7 +8,8 @@ from nodedata import NodeData
 import logging
 import threading
 from config import Config
-
+from telegram_notifier import TelegramNotifier
+import asyncio
 
 # This prevents the Werkzeug logger from printing to the console all the requests we receive
 if not Config().get('debug.http_logging', False):
@@ -142,12 +143,16 @@ def find_free_port():
 #    └──────────────────────────────────────────────────────────┘
 if __name__ == '__main__':
     listener = Listener()
-    port = find_free_port()
+    config = Config()
+    notifier = TelegramNotifier()
+    localNode = Mesh().node.localNode
+    port = config.get('server.listen_port', find_free_port())
+
     if os.name == 'nt':
         os.system(f'explorer "http:/127.0.0.1:{port}"')
     else:
         os.system(f'open http://127.0.0.1:{port}')
 
-    print(f'To reopen browser, go to: http://127.0.0.1:{port}')
+    print(f'To reopen browser, go to: http://127.0.0.1:{port}')   
+    asyncio.run(notifier.send_message(f"<b>Meshtastic Monitor</b> started!"))
     app.run(port=port, debug=False)
-

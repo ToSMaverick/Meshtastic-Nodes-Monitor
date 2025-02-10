@@ -5,6 +5,8 @@ from nodedata import NodeData
 from status import Status
 from config import Config
 import uuid
+from telegram_notifier import TelegramNotifier
+import asyncio
 
 # Generate a short UUID by truncating
 def short_uuid():
@@ -28,6 +30,10 @@ class Message:
         self.hops = -1
         self.fromName = ''
         self.decoded = {}
+        self.config = Config()
+        self.message_types = self.config.get('telegram.message_types', [])
+        self.notifier = TelegramNotifier()
+        self.localNode = Mesh().node.localNode
 
     def handle_message(self):
         if 'rxTime' in self.packet:
@@ -54,7 +60,7 @@ class Message:
         self.log_packet_to_file()
 
         # we get a lot of TELEMETRY_APP packets from ourselves that aren't transmitted, just sent back to the local computer
-        if self.packet['from'] == Mesh().node.localNode.nodeNum and self.application == 'TELEMETRY_APP':
+        if self.packet['from'] == self.localNode.nodeNum and self.application == 'TELEMETRY_APP':
             return
 
         self.increment_count()
@@ -139,6 +145,8 @@ class Message:
                 data['channel'] = 'DM'
             else:
                 data['channel'] = "Pri"
+        elif len(self.localNode.channels) >= int(data['channel']) and hasattr(self.localNode.channels[int(data['channel'])].settings, 'name'):
+            data['channel'] = self.localNode.channels[int(data['channel'])].settings.name            
 
         if self.application == 'TEXT_MESSAGE_APP':
             text = data['text']
@@ -147,6 +155,23 @@ class Message:
         self.status.add_msg(data['received'], data['fromName'], data['toName'], data['channel'], text, self.fromId)
 
         self.add_node_to_ui('Text', text[:32])
+
+        # Forwarding to Telegram
+        if self.application in self.message_types:
+            message = (
+                f"Von: <b>{data['fromName']}</b>\n"
+                f"An: {data['toName']}\n"
+                f"Kanal: {data['channel']}\n"
+                "--------------------\n"
+                f"{text}\n"
+                "--------------------\n"
+                f"Empfangen: {data['received']}\n"
+                f"RSSI: {self.packet['rxRssi']}, "
+                f"SNR: {self.packet['rxSnr']}, "
+                f"📡 {self.hops} Hops\n"
+                #f"Data: {data}\n"
+            )
+            asyncio.run(self.notifier.send_message(message))
 
     def handle_telemetry(self):
         telemetry = self.decoded.get('telemetry', {})
@@ -179,9 +204,8 @@ class Message:
         position = self.decoded.get('position', {})
         node_lat = position.get("latitude", None)
         node_long = position.get("longitude", None)
-        config = Config()
-        my_lat = config.get('location.latitude', None)
-        my_long = config.get('location.longitude', None)
+        my_lat = self.config.get('location.latitude', None)
+        my_long = self.config.get('location.longitude', None)
 
         distance = ''
         if all([node_lat, node_long, my_lat, my_long]):
