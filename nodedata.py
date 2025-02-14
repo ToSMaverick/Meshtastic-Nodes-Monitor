@@ -1,3 +1,5 @@
+import sys
+import json
 from mesh import Mesh
 from utilities import *
 
@@ -117,3 +119,16 @@ class NodeData:
                 n['lastHeard'] = 'Unknown'
 
         return nodes
+
+if __name__ == "__main__":
+    node_data = NodeData()
+    if len(sys.argv) > 2:
+        node_id = sys.argv[2]
+        data = node_data.lookup_by_id('!' + node_id)
+        if data:
+            print(json.dumps(data, indent=4))
+        else:
+            print(f"Node with ID {node_id} not found.")
+    else:
+        data = node_data.get_nodes()
+        print(json.dumps(data, indent=4))
